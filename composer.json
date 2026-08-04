@@ -1,0 +1,39 @@
+{
+    "name": "detain/phlix-plugin-sample-theme",
+    "type": "phlix-plugin",
+    "description": "Reference ui-theme plugin for Phlix — two token-map themes registered through ThemeSourceInterface.",
+    "license": "MIT",
+    "keywords": ["phlix", "phlix-plugin", "ui-theme", "theme", "example"],
+    "homepage": "https://github.com/detain/phlix-plugin-sample-theme",
+    "require": {
+        "php": ">=8.3",
+        "detain/phlix-shared": "^0.21",
+        "psr/container": "^1.1 || ^2.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^10.0",
+        "squizlabs/php_codesniffer": "^4.0"
+    },
+    "repositories": [
+        { "type": "vcs", "url": "https://github.com/detain/phlix-shared.git" }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Phlix\\PluginSampleTheme\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phlix\\PluginSampleTheme\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon",
+        "phpcs": "vendor/bin/phpcs --standard=phpcs.xml"
+    }
+}

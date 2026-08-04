@@ -1,0 +1,12 @@
+parameters:
+    level: 9
+    paths:
+        - src
+        - tests
+    # `Phlix\Theming\ThemeSourceInterface` is declared by the HOST server, not by
+    # any Composer dependency, so PHPStan cannot find it in `vendor/`. It must be
+    # INTRODUCED (scanDirectories), not overridden (stubFiles) — `stubFiles` only
+    # replaces the definition of a symbol PHPStan can already resolve, so for a
+    # genuinely unfindable symbol it is silently useless.
+    scanDirectories:
+        - dev-stubs

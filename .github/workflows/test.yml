@@ -1,0 +1,47 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --colors=always
+
+      # phpunit.xml writes a cobertura report to ./coverage.xml (pcov is enabled above).
+      # Uploaded from a single matrix leg so both PHP versions do not race on the same commit.
+      - name: Upload coverage to Codacy
+        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
+        continue-on-error: true
+        if: matrix.php == '8.3'
+        with:
+          api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: ./coverage.xml
+
+      # -c phpstan.neon (not `analyse src`) so scanDirectories picks up the
+      # dev-stub for the host-only Phlix\Theming\ThemeSourceInterface.
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+
+      # --standard=phpcs.xml (not `phpcs src`) so tests/ and dev-stubs/ are checked too.
+      - name: Run PHPCS
+        run: vendor/bin/phpcs --standard=phpcs.xml

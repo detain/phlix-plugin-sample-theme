@@ -42,8 +42,9 @@ use PHPUnit\Framework\TestCase;
  *     the offending flag, and a detector that matches its own documentation is
  *     not a detector.
  *  3. **The gate cannot be neutered.** The audit job must carry no
- *     `continue-on-error` and no `if:` condition, and the workflow must still
- *     run on `pull_request`.
+ *     `continue-on-error` and no `if:` condition — the job slice runs to
+ *     end-of-file, so step-level flags are caught too — and the workflow must
+ *     still run on `pull_request`.
  *  4. **The corpus is stated and floored.** A gate that ran and inspected zero
  *     packages is the commonest false pass in this estate and looks exactly like
  *     a clean run, so the printed size is checked against an independent count,
@@ -54,6 +55,15 @@ use PHPUnit\Framework\TestCase;
  *  6. **The blocking/advisory split holds.** Abandonment and config-ignored
  *     advisories are loud but non-blocking; a real advisory blocks even when
  *     they are present, so the advisory half cannot become decorative.
+ *  7. **The command cannot be neutered at the shell.** The audit step's single
+ *     `run:` line is pinned by EQUALITY to the bare gate invocation — `|| true`
+ *     keeps every containment check green while making the step always succeed
+ *     (C2-review hole H1), so containment is not enough.
+ *  8. **The flags cannot be bypassed at the spawn.** The process call that runs
+ *     `composer audit` must take its argv from the AUDIT_ARGUMENTS constant,
+ *     and the literal `'audit'` must occur nowhere else in the script — an
+ *     inline argv would leave the constant, and every assertion reading it,
+ *     intact while auditing a different command (C2-review hole H2).
  *
  * @internal
  */
@@ -65,7 +75,7 @@ final class SecurityAuditCheckTest extends TestCase
 
     private const REAL_LOCK = __DIR__ . '/../composer.lock';
 
-    /** S440 lane survival token — asserted against the gate script by {@see testTheLaneTokenIsCarriedByTheGateScript()}. */
+    /** S440 lane survival token — a real code string, self-asserted by {@see testThisIsTheS440GateSuite()}, so it survives tokenisation and stays greppable. */
     private const LANE_TOKEN = 'S440SAMPTHEMEGATEX6B2';
 
     /**
@@ -214,6 +224,84 @@ final class SecurityAuditCheckTest extends TestCase
             '--no-dev',
             $flags,
             'S246: the audit must cover require-dev packages.',
+        );
+    }
+
+    /**
+     * C2-review hole H1: appending `|| true` to the audit run line keeps every
+     * containment assertion above green — a neutered command still CONTAINS the
+     * gate invocation. The law here is therefore equality: the audit job's one
+     * and only `run:` value must be exactly the bare gate invocation. No shell
+     * operators (`||`, `&&`, `;`), no redirections, no env-prefix games, and no
+     * block scalar hiding extra lines. Step-level `continue-on-error` and `if:`
+     * are already caught by {@see testTheAuditJobIsNotNeutered()} — its slice
+     * runs from `composer-audit:` to end-of-file — so they are not duplicated.
+     */
+    public function testTheAuditRunLineIsTheBareGateInvocation(): void
+    {
+        $matches = [];
+        $count   = preg_match_all('/^\s*run:[ \t]*(.*?)[ \t]*$/m', $this->auditJob(), $matches);
+
+        self::assertSame(
+            1,
+            $count,
+            'The audit job must contain exactly one run step so this law binds a single, '
+            . 'identifiable command — a second run line is a new escape vector.',
+        );
+
+        // Safe: the count assertion above guarantees exactly one capture.
+        self::assertSame(
+            'php scripts/security-audit-check.php',
+            $matches[1][0],
+            'The audit run line must be exactly the bare gate invocation. Trailing shell '
+            . 'operators (|| true, && :, ; true), output redirections (2>/dev/null) or an '
+            . 'env prefix keep the command *contained* in the step — which is all the '
+            . 'containment tests can see — while making it unconditionally green (H1).',
+        );
+    }
+
+    /**
+     * C2-review hole H2: every flag assertion above reads the AUDIT_ARGUMENTS
+     * CONSTANT, but nothing pinned the composer spawn site to USE it. Rewrite
+     * captureAuditPayload() to build an inline argv — dropping `--locked` while
+     * the constant survives review untouched — and the gate audits a different
+     * command than the one under test, with the flag law still green. Three
+     * interlocking rules close that:
+     *
+     *  1. The spawn function must still exist — a rename is a silent escape hatch.
+     *  2. Inside its body (comments token-stripped, so prose cannot satisfy the
+     *     regex) exactly one process spawn must take its argv from the constant.
+     *  3. The string literal 'audit' may appear exactly once in the whole script.
+     *     {@see testTheAuditIsInvokedWithoutTheDevExclusion()} proves that
+     *     occurrence sits inside the constant declaration, so no inline audit
+     *     argv can exist anywhere — at any call site, in either quoting style.
+     */
+    public function testTheComposerAuditSpawnBuildsItsArgvFromTheConstant(): void
+    {
+        $source = (string) file_get_contents(self::SCRIPT);
+        $body   = $this->functionBody($source, 'captureAuditPayload');
+
+        self::assertSame(
+            1,
+            substr_count($body, 'runProcess('),
+            'captureAuditPayload() must contain exactly one process spawn — the audit '
+            . 'command must be one identifiable call, not a sequence of spawns.',
+        );
+
+        self::assertMatchesRegularExpression(
+            '/runProcess\s*\([^;]*AUDIT_ARGUMENTS/',
+            $body,
+            'The composer-audit spawn must build its argv from the AUDIT_ARGUMENTS constant '
+            . '(H2). An inline list leaves the constant — and every flag assertion above — '
+            . 'intact while running something else.',
+        );
+
+        self::assertSame(
+            1,
+            $this->countStringLiteralsEqualTo($source, 'audit'),
+            "The bare string literal 'audit' may appear exactly once in the script — inside "
+            . 'the AUDIT_ARGUMENTS declaration. A second occurrence is an inline composer argv '
+            . 'somewhere that bypasses the constant (H2).',
         );
     }
 
@@ -805,5 +893,118 @@ final class SecurityAuditCheckTest extends TestCase
         );
 
         return $flags;
+    }
+
+    /**
+     * Count the constant string tokens whose value is exactly $wanted, in either
+     * quoting style. Comments, docblocks and multi-word prose are not constant
+     * strings, so documentation about the audit cannot inflate the count — and a
+     * detector that matches its own documentation is not a detector.
+     */
+    private function countStringLiteralsEqualTo(string $source, string $wanted): int
+    {
+        $count = 0;
+
+        foreach (token_get_all($source) as $token) {
+            if (!is_array($token) || $token[0] !== T_CONSTANT_ENCAPSED_STRING) {
+                continue;
+            }
+
+            if (trim($token[1], "'\"") === $wanted) {
+                ++$count;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
+     * The body of a declared function, comments removed, located by walking
+     * `token_get_all()` so braces inside comments or strings cannot shift the
+     * slice. Fails loudly when the function is absent — a renamed or deleted
+     * spawn function must redden the suite, never make the spawn-site law
+     * silently vacuous.
+     */
+    private function functionBody(string $source, string $functionName): string
+    {
+        $tokens = token_get_all($source);
+        $total  = count($tokens);
+
+        for ($i = 0; $i < $total; $i++) {
+            if (!is_array($tokens[$i]) || $tokens[$i][0] !== T_FUNCTION) {
+                continue;
+            }
+
+            $nameIndex = null;
+
+            for ($j = $i + 1; $j < $total; $j++) {
+                if (is_array($tokens[$j]) && $tokens[$j][0] === T_STRING) {
+                    $nameIndex = $j;
+                    break;
+                }
+            }
+
+            if (
+                $nameIndex === null
+                || !is_array($tokens[$nameIndex])
+                || $tokens[$nameIndex][1] !== $functionName
+            ) {
+                continue;
+            }
+
+            $body    = '';
+            $depth   = 0;
+            $started = false;
+
+            for ($k = $nameIndex + 1; $k < $total; $k++) {
+                $token = $tokens[$k];
+
+                if (is_array($token)) {
+                    if ($started && $token[0] !== T_COMMENT && $token[0] !== T_DOC_COMMENT) {
+                        $body .= $token[1];
+                    }
+
+                    continue;
+                }
+
+                if ($token === '{') {
+                    $depth++;
+                    $started = true;
+
+                    if ($depth > 1) {
+                        $body .= $token;
+                    }
+
+                    continue;
+                }
+
+                if ($token === '}') {
+                    $depth--;
+
+                    if ($depth === 0) {
+                        return trim($body);
+                    }
+
+                    $body .= $token;
+
+                    continue;
+                }
+
+                if ($started) {
+                    $body .= $token;
+                }
+            }
+
+            self::fail(
+                sprintf('Could not find the closing brace of %s() — unbalanced braces.', $functionName)
+            );
+        }
+
+        self::fail(sprintf(
+            'scripts/security-audit-check.php must declare %s() — that is the composer-audit '
+            . 'spawn site this law pins. Renaming or deleting it must redden the suite, not '
+            . 'make the spawn-site assertions vacuously green.',
+            $functionName,
+        ));
     }
 }

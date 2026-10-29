@@ -158,6 +158,16 @@ If you fork this plugin, keep that habit: re-hue through the six semantic
 `--accent*` tokens and the surface/text/border ramps, and only add an alias you
 can point at a real `var()` consumer.
 
+Two of those tokens carry **inverse roles** that are constantly confused —
+including by sibling themes in this estate's own cohort.
+**`--accent-text`** is the accent hue used *as foreground*: text and icons
+painted on `--bg`/`--surface`, so it must clear AA body contrast (4.5:1) there.
+**`--text-on-accent`** is the ink used *on accent fills*: button labels and
+selected states, read against the accent, not against the page. They are never
+equal — making `--accent-text` the on-fill value renders accent-on-accent text
+at ≈1:1 (one green-hued theme family shipped exactly that bug as focus text and
+initials).
+
 ## What the two sample themes demonstrate
 
 | Theme | `extends` | Point |

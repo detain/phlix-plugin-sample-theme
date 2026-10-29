@@ -1,7 +1,9 @@
 # phlix-plugin-sample-theme
 
 A complete, installable **`ui-theme`** plugin — the reference for shipping a
-theme to the Phlix SPA. Fork it, rename it, change the token values.
+theme to the Phlix SPA. Fork it, rename it, change the token values —
+[Renaming your fork](#renaming-your-fork) enumerates every identifier the
+rename touches.
 
 ```
 phlix-plugin-sample-theme/
@@ -174,6 +176,60 @@ can point at a real `var()` consumer.
 
 If the picker still shows three, the plugin is installed but not enabled, or the
 worker has not re-attached it — `php bin/phlix plugin:list` tells you which.
+
+## Renaming your fork
+
+Every identifier a cloner must change, in the order a grep finds them. A fork
+that renames only the display name is *still* `sample-theme` to the host — and
+item 7 makes that variant dangerous, not cosmetic.
+
+1. **composer.json** — `name` (`detain/phlix-plugin-sample-theme`),
+   `homepage`, `description`, `keywords`.
+2. **plugin.json** — `name`. This is the string `php bin/phlix plugin:enable`
+   (and `disable`/`uninstall`) take as its argument; the server's install
+   directory is derived from it.
+3. **plugin.json** — `entry` FQCN (`Phlix\\PluginSampleTheme\\SampleThemePlugin`).
+   It must move together with items 4 and 6 or the loader's
+   `class_exists($manifest->entry)` fails at enable.
+4. **Namespace `Phlix\PluginSampleTheme`** — in `src/` and `tests/`, *and* the
+   string embedded in `scripts/security-audit-check.php` (`@package` and the
+   docblock cite of the guard test at :102/:115) — the guard test reads the
+   script's own text, so the rename must land in both.
+5. **autoload-dev namespace** `Phlix\PluginSampleTheme\Tests` (composer.json).
+6. **Class name and files** — `SampleThemePlugin` in
+   `src/SampleThemePlugin.php` and `tests/SampleThemePluginTest.php` (PSR-4
+   requires class↔filename agreement).
+7. **`SOURCE_NAME`** (`src/SampleThemePlugin.php:96`, currently
+   `'sample-theme'`) — **the rename that fails silently.** Read the note below
+   before you skip it.
+8. **Theme ids and display names** — `sample-dusk`,
+   `sample-dusk-high-contrast`, `Sample Dusk`, `Sample Dusk (High Contrast)`.
+   "Sample" is placeholder copy: shipping it means users pick "Sample Dusk"
+   from your server's appearance picker. Ids collide *loudly* (see below); the
+   display name is pure branding, so change both.
+9. **The S440 guard token** — `S440SAMPTHEMEGATEX6B2` in
+   `tests/SecurityAuditCheckTest.php` (constant, equality assertion, and the
+   "Lane token:" header line). Every theme repo in the estate was minted a
+   unique token when the guard was propagated; a fork mints its own too — it
+   identifies *your* lane in CI logs.
+10. **Housekeeping** — regenerate `composer.lock` (`composer update`, never
+    hand-edit), the `LICENSE` copyright line, this README's title and URLs,
+    and anything in `.github/workflows/` that names the repo.
+
+**Why item 7 is the dangerous one.** `ThemeSourceRegistry` keys provenance by
+source name, and re-registering a name **replaces** the previous contribution
+(drop-then-add, never append — `phlix-server/src/Theming/ThemeSourceRegistry.php:41`).
+Two enabled plugins both named `sample-theme` therefore *silently delete each
+other's themes* whenever either enables. Duplicate theme **ids** at least fail
+loudly: registration throws `"… is already registered by …"` (:121). The quiet
+failure mode is exactly the identifier "Fork it, rename it" would never prompt
+you to touch, which is why it is spelled out here.
+
+**The fork-inverse of "Keep it constant across versions."** The docblock above
+`SOURCE_NAME` tells the *reference* plugin to never change it — that law
+applies to a fork **after** its one mandatory rename: change it once, when you
+fork, and then keep *that* value constant forever, because users already
+installed under it and disable/uninstall remove exactly its ids.
 
 ## Developing
 

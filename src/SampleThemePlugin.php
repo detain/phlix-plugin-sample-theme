@@ -32,17 +32,20 @@ use Psr\Container\ContainerInterface;
  * exercises both halves of the `extends` contract that S86 resolved
  * client-side:
  *
- *  - **`sample-dusk` extends a BUILT-IN (`midnight`).** The server does not
- *    know what `midnight`'s 53 token values are — they live in the SPA's
- *    bundled `@phlix/tokens` stylesheet — so no amount of server-side
- *    flattening could resolve this chain. The SPA layers it by pointing
- *    `data-theme` at `midnight` and `setProperty`-ing the overrides on top.
+ *  - **`sample-dusk` extends a BUILT-IN (`midnight`).** The server does know
+ *    `midnight`'s values — `Phlix\Theming\BuiltInThemes` carries a full
+ *    53-token map for every built-in, and the LIST response publishes them —
+ *    but the wire never flattens a chain: `tokens` is always the theme's OWN
+ *    declared map, so layering is the client's job. Here the layering is
+ *    mechanical: the SPA points `data-theme` at `midnight`, whose real values
+ *    then come from its bundled `@phlix/tokens` stylesheet, and `setProperty`s
+ *    the overrides on top.
  *    Note what is deliberately NOT overridden: the status colours
  *    (`--error*`, `--success*`, `--warning*`, `--info*`) come straight from the
  *    base through the cascade.
  *  - **`sample-dusk-high-contrast` extends a PLUGIN theme (`sample-dusk`).**
- *    That chain IS resolvable from server data — but only from the LIST
- *    response, which carries every registered theme.
+ *    No stylesheet knows that base, so the client resolves it from data — and
+ *    only the LIST response carries every registered theme.
  *    `GET /api/v1/themes/{id}` alone would hand a client eight text/border
  *    tokens and no background.
  *
@@ -196,7 +199,8 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                 'id' => 'sample-dusk-high-contrast',
                 'name' => 'Sample Dusk (High Contrast)',
                 'dark' => true,
-                // A PLUGIN base: resolvable only from the LIST response.
+                // A PLUGIN base: no stylesheet carries it, so the client
+                // merges the chain from the LIST response.
                 'extends' => 'sample-dusk',
                 'tokens' => [
                     '--text' => '#ffffff',

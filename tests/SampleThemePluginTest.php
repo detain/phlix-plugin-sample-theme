@@ -241,8 +241,11 @@ final class SampleThemePluginTest extends TestCase
     }
 
     /**
-     * The whole point of shipping two themes: one chain the SPA must resolve
-     * (plugin → built-in) and one the server can (plugin → plugin).
+     * The whole point of shipping two themes: the two `extends` chains land
+     * through different mechanisms — a built-in base arrives as a
+     * `data-theme` stylesheet switch, a plugin base is merged from the LIST
+     * response and applied with `setProperty`. Both links come from the same
+     * list; the wire never flattens, because `tokens` is each theme's own map.
      */
     public function testTheSampleExercisesBothKindsOfExtendsChain(): void
     {

@@ -352,6 +352,143 @@ final class SampleThemePluginTest extends TestCase
     public function testTheShippedTokenCountsAreExactlyWhatTheReadmeDocuments(): void
     {
         self::assertCount(28, $this->tokensOf('sample-dusk'));
-        self::assertCount(8, $this->tokensOf('sample-dusk-high-contrast'));
+        self::assertCount(9, $this->tokensOf('sample-dusk-high-contrast'));
+    }
+
+    /**
+     * WCAG AA floor for the faintest ink, measured FROM THE PAYLOAD HEXES —
+     * no host CSS needed, so this test travels with the payload.
+     *
+     * `--text-faint` is not decorative in the shipped SPA: phlix-ui's
+     * `AuthField.vue` renders `::placeholder` in `--text-faint` on an input
+     * background of `color-mix(in srgb, var(--surface) 80%, transparent)`
+     * laid over whatever page background the form sits on (`--bg`,
+     * `--surface`, or a `--surface-2` panel). The value this sample shipped
+     * from its first commit — `#465061` — measures 2.39:1 there:
+     * decoration-grade ink on an interactive control.
+     *
+     * The high-contrast variant must carry its OWN faintest tier: it inherits
+     * dusk's backgrounds but raises its ink, and a variant that forgot the
+     * tier would leave placeholders at the dusk value inside an otherwise
+     * raised-contrast form. Both variants are pinned against every background
+     * derivable from the payload — raw and composited.
+     */
+    public function testTheFaintInkClearsWcagAaOnEveryBackgroundItRendersOn(): void
+    {
+        $dusk = $this->tokensOf('sample-dusk');
+        $highContrast = $this->tokensOf('sample-dusk-high-contrast');
+
+        self::assertArrayHasKey(
+            '--text-faint',
+            $highContrast,
+            'The high-contrast variant must override the faintest tier, not inherit it.'
+        );
+
+        // Raw ink is the caption/hint role — it sits on the page's opaque
+        // grounds (--bg, --surface). --surface-2 is NOT asserted raw on
+        // purpose: the value that would clear 4.5:1 there (luminance ≥
+        // 0.2259) is brighter than --text-subtle (0.2235) — the ramp would
+        // have to collapse to satisfy it. On --surface-2 the hosted faint
+        // roles are inputs, which always arrive composited (the law below);
+        // a raw-faint caption on the elevated panel is a design change that
+        // must re-derive this arithmetic, not a default the sample can pin.
+        $grounds = ['--bg', '--surface'];
+
+        foreach (['sample-dusk' => $dusk, 'sample-dusk-high-contrast' => $highContrast] as $id => $tokens) {
+            foreach (['--bg', '--surface', '--surface-2'] as $pageKey) {
+                $page = $dusk[$pageKey];
+                $input = self::composite($dusk['--surface'], 0.8, $page);
+
+                $backgrounds = ['composited input' => $input];
+                if (in_array($pageKey, $grounds, true)) {
+                    $backgrounds[$pageKey] = $page;
+                }
+
+                foreach ($backgrounds as $label => $background) {
+                    $ratio = self::contrast($tokens['--text-faint'], $background);
+                    self::assertGreaterThanOrEqual(
+                        4.5,
+                        $ratio,
+                        sprintf(
+                            '%s: --text-faint %s on %s %s is %.2f:1 — below the 4.5:1 body-text floor.',
+                            $id,
+                            $tokens['--text-faint'],
+                            $label,
+                            $background,
+                            $ratio
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * The four text tiers must stay a STRICT luminance ramp — text > muted >
+     * subtle > faint — in both themes. Pulling one tier into its neighbour to
+     * pass a contrast floor is how ramps silently die; raise the whole tier
+     * instead and keep the ordering provable.
+     */
+    public function testTheTextTiersFormAStrictLuminanceRamp(): void
+    {
+        foreach (['sample-dusk', 'sample-dusk-high-contrast'] as $id) {
+            $tokens = $this->tokensOf($id);
+
+            $previous = null;
+            foreach (['--text', '--text-muted', '--text-subtle', '--text-faint'] as $tier) {
+                $luminance = self::luminance($tokens[$tier]);
+
+                if ($previous !== null) {
+                    self::assertLessThan(
+                        $previous,
+                        $luminance,
+                        $id . ': ramp tier ' . $tier . ' is not dimmer than the tier above it.'
+                    );
+                }
+                $previous = $luminance;
+            }
+        }
+    }
+
+    /**
+     * WCAG 2.x relative luminance of a `#rrggbb` hex.
+     */
+    private static function luminance(string $hex): float
+    {
+        $linear = [];
+        foreach ([0, 1, 2] as $i) {
+            $channel = hexdec(substr($hex, 1 + 2 * $i, 2)) / 255.0;
+            $linear[] = $channel <= 0.03928 ? $channel / 12.92 : (($channel + 0.055) / 1.055) ** 2.4;
+        }
+
+        return 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2];
+    }
+
+    /**
+     * WCAG contrast ratio between two `#rrggbb` hexes.
+     */
+    private static function contrast(string $first, string $second): float
+    {
+        $luminanceFirst = self::luminance($first);
+        $luminanceSecond = self::luminance($second);
+
+        return (max($luminanceFirst, $luminanceSecond) + 0.05) / (min($luminanceFirst, $luminanceSecond) + 0.05);
+    }
+
+    /**
+     * The 8-bit sRGB result of `color-mix(in srgb, $layer <alpha>, transparent)`
+     * composited over an opaque page: layer × alpha + page × (1 − alpha) per
+     * channel — the arithmetic a browser performs for the host's input rule.
+     */
+    private static function composite(string $layer, float $alpha, string $page): string
+    {
+        $hex = '#';
+        foreach ([0, 1, 2] as $i) {
+            $channel = $alpha * hexdec(substr($layer, 1 + 2 * $i, 2))
+                + (1.0 - $alpha) * hexdec(substr($page, 1 + 2 * $i, 2));
+            $hex .= str_pad(dechex((int) round($channel)), 2, '0', STR_PAD_LEFT);
+        }
+
+        return $hex;
     }
 }

@@ -386,9 +386,12 @@ final class SampleThemePluginTest extends TestCase
 
         // Raw ink is the caption/hint role — it sits on the page's opaque
         // grounds (--bg, --surface). --surface-2 is NOT asserted raw on
-        // purpose: the value that would clear 4.5:1 there (luminance ≥
-        // 0.2259) is brighter than --text-subtle (0.2235) — the ramp would
-        // have to collapse to satisfy it. On --surface-2 the hosted faint
+        // purpose: clearing 4.5:1 there needs luminance ≥
+        // 4.5*(L(#131a26)+0.05)-0.05 = 4.5*(0.010172+0.05)-0.05 = 0.220773,
+        // which sits just BELOW --text-subtle (0.223476) — a faint could
+        // clear the elevated ground raw only inside the hairline window
+        // [0.2208, 0.2235), within 0.003 luminance of subtle: effectively
+        // collapsing the tier distinction. On --surface-2 the hosted faint
         // roles are inputs, which always arrive composited (the law below);
         // a raw-faint caption on the elevated panel is a design change that
         // must re-derive this arithmetic, not a default the sample can pin.

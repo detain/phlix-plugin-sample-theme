@@ -56,10 +56,16 @@ final class SampleThemePluginTest extends TestCase
     private const RESERVED_IDS = ['nocturne', 'daylight', 'midnight'];
 
     /**
-     * The `--color-*` aliases measured (2026-08-04) to have ZERO `var()`
-     * consumers in the shipped SPA. Setting them is a no-op that only inflates
-     * the payload, so this sample omits them on purpose; this list is the guard
-     * that keeps them omitted.
+     * The 13 `--color-*` aliases the host's S228 finding named dead, as
+     * re-censused 2026-09-05 (the 2026-08-04 date first measured this list
+     * from the shipped SPA): 12 have zero `var()` consumers estate-wide;
+     * the 13th, `--color-primary`, has exactly one — the dev-only preview
+     * page `phlix-ui/src/dev/swatches.html`, which ships to no client.
+     * Setting them is a no-op that only inflates the payload, so this
+     * sample omits all 13; this list is the guard that keeps them omitted.
+     * The host's own record — `Phlix\Theming\ThemeTokenAllowlist` in
+     * phlix-server — carries the same census; when it moves, this
+     * sentence moves with it.
      *
      * @var list<string>
      */
@@ -295,7 +301,9 @@ final class SampleThemePluginTest extends TestCase
     }
 
     /**
-     * The S226 decision, pinned: aliases nothing reads stay out.
+     * The S228 decision, pinned: aliases nothing reads stay out. (S226 was
+     * the catalog ticket, not this one — phlix-server's `ThemeTokenAllowlist`
+     * prose credits S228 with naming the 13 dead aliases.)
      */
     public function testNoThemeSetsAnAliasTokenTheSpaDoesNotRead(): void
     {

@@ -11,6 +11,24 @@ just in the git log.
 
 ## [Unreleased]
 
+### Changed — review-campaign minors, theme vein batch W-min153 (2026-10-30)
+- The dead-alias census is restated to the host's refined record everywhere it
+  appears (class docblock, `DEAD_ALIASES` guard docblock, README): twelve of
+  the thirteen aliases have zero `var()` consumers estate-wide; the thirteenth,
+  `--color-primary`, is read only by the dev-only preview page
+  `phlix-ui/src/dev/swatches.html` — which ships to no client, so the omission
+  policy (all 13 stay out; guard test unchanged) is untouched. The former
+  blanket "13 have zero consumers" and the lone "2026-08-04" date had drifted
+  from phlix-server's 2026-09-05 re-census; the two records now share one
+  sentence. *(M-THEME-SAMPLE-05, -17)*
+- Payload alias-block comment: "The nine dead `--color-*` aliases are omitted"
+  → "thirteen" (nine is the count of the LIVE aliases kept, thirteen the dead
+  ones omitted). *(found en route under -05)*
+- `testNoThemeSetsAnAliasTokenTheSpaDoesNotRead` attribution S226 → S228:
+  S226 was the catalog ticket (phlix-docs RESUME record); the server prose
+  credits S228 with naming the dead aliases, as this file already cited at its
+  header. Forks grep these ids. *(M-THEME-SAMPLE-14)*
+
 ### Fixed — review-campaign minors, theme vein batch W-min151 (2026-10-30)
 - `--accent-ring` alpha re-derived for this theme's own accent: `0.55` was
   nocturne's amber-derived value transplanted onto a dimmer blue and measures

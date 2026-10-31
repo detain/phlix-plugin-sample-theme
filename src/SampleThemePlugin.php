@@ -67,13 +67,19 @@ use Psr\Container\ContainerInterface;
  * `--color-surface-hover`, `--color-surface-elevated`, `--color-surface-active`,
  * `--color-text-secondary`, `--color-text-subtle`, `--color-border-subtle`,
  * `--color-error-bg`, `--color-success-bg`, `--color-warning-bg`,
- * `--color-info-bg`) have **zero `var()` consumers in the shipped SPA** — the
- * `--color-*` alias migration finished, and setting a property nothing reads is
- * a no-op that only inflates the payload. They are omitted on purpose so this
- * sample models what a real theme should ship. The nine `--color-*` aliases that
- * ARE still read (`--color-bg`, `--color-surface`, `--color-text`,
- * `--color-text-muted`, `--color-border`, plus the four status aliases) are kept
- * where the corresponding modern token is overridden.
+ * `--color-info-bg`) are the leftover `--color-*` aliases the host's S228
+ * finding named dead. Shared census (sample-side measurement 2026-08-04;
+ * host re-census 2026-09-05, recorded in
+ * `Phlix\Theming\ThemeTokenAllowlist::LEGACY_ALIAS`): 12 have **zero `var()`
+ * consumers estate-wide**, and the 13th — `--color-primary` — is read by
+ * exactly one surface, the dev-only preview page
+ * `phlix-ui/src/dev/swatches.html`, which ships to no client. Setting a
+ * property nothing reads is a no-op that only inflates the payload, so all
+ * 13 are omitted on purpose: this sample models what a real theme should
+ * ship. The nine `--color-*` aliases that ARE still read (`--color-bg`,
+ * `--color-surface`, `--color-text`, `--color-text-muted`, `--color-border`,
+ * plus the four status aliases) are kept where the corresponding modern
+ * token is overridden.
  *
  * ## Resident-memory contract
  *
@@ -228,7 +234,7 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     // would in principle follow the overrides above through the
                     // cascade; they are set explicitly anyway because that is
                     // one fewer cascade assumption between a plugin author and a
-                    // correct render. The nine dead `--color-*` aliases are
+                    // correct render. The thirteen dead `--color-*` aliases are
                     // omitted — see the class docblock.
                     '--color-bg' => '#05060a',
                     '--color-surface' => '#0b0f18',

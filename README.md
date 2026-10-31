@@ -156,8 +156,13 @@ all-or-nothing and never silent.
 ## Allowlisted ≠ read: why this sample sets 28 tokens, not 53
 
 Setting a custom property nothing reads is a no-op. Thirteen of the 53
-allowlisted names are `--color-*` aliases left over from a migration that has
-since finished, and they have **zero `var()` consumers in the shipped SPA**:
+allowlisted names are `--color-*` aliases the host's S228 finding named dead,
+on a shared census (first measured 2026-08-04 from the shipped SPA;
+re-censused 2026-09-05 across every repo's `var()` surface — phlix-server's
+`ThemeTokenAllowlist` records it): twelve have **zero `var()` consumers
+estate-wide**, and the thirteenth — `--color-primary` — is read by exactly
+one surface, the dev-only preview page `phlix-ui/src/dev/swatches.html`,
+which ships to no client. The thirteen:
 
 ```
 --color-primary          --color-surface-hover      --color-error-bg

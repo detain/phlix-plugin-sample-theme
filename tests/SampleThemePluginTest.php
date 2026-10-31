@@ -454,6 +454,73 @@ final class SampleThemePluginTest extends TestCase
     }
 
     /**
+     * The focus ring is an alpha over this theme's accent, composited by the
+     * host onto whatever ground the focused control sits on — so its contrast
+     * is fully derivable from the shipped payload, and it must clear WCAG
+     * 1.4.11's 3:1 non-text floor on ALL FOUR grounds, not just the page bg.
+     * This is the arithmetic the ring's inline comment points at: an alpha
+     * copied from a brighter-accented sibling measures under 3:1 on the
+     * strictest ground here (surface-3), so the value is RE-DERIVED, and this
+     * test is what keeps a future re-hue honest.
+     */
+    public function testTheFocusRingClearsThreeToOneOnEveryGround(): void
+    {
+        $dusk = $this->tokensOf('sample-dusk');
+        [$ink, $alpha] = self::splitRgba($dusk['--accent-ring']);
+
+        foreach (['--bg', '--surface', '--surface-2', '--surface-3'] as $groundKey) {
+            $ground = $dusk[$groundKey];
+            $ratio = self::contrast(self::composite($ink, $alpha, $ground), $ground);
+
+            self::assertGreaterThanOrEqual(
+                3.0,
+                $ratio,
+                sprintf(
+                    '%s over %s (%s) is %.2f:1 — below the 3:1 non-text floor. '
+                    . 'Re-derive the alpha for this accent; do not copy one.',
+                    $dusk['--accent-ring'],
+                    $groundKey,
+                    $ground,
+                    $ratio
+                )
+            );
+        }
+    }
+
+    /**
+     * The three border tiers must stay a STRICT luminance ramp —
+     * border-subtle < border < border-strong — in both themes (the
+     * high-contrast variant merged over its base). Same law as the text
+     * ramp, one layer down: lifting a single boundary token past its
+     * neighbour inverts the elevation reading. The payload's borders
+     * trade-off comment points here.
+     */
+    public function testTheBorderTiersFormAStrictLuminanceRamp(): void
+    {
+        $dusk = $this->tokensOf('sample-dusk');
+        $merged = $dusk;
+        foreach ($this->tokensOf('sample-dusk-high-contrast') as $key => $value) {
+            $merged[$key] = $value;
+        }
+
+        foreach (['sample-dusk' => $dusk, 'sample-dusk-high-contrast' => $merged] as $id => $tokens) {
+            $previous = null;
+            foreach (['--border-strong', '--border', '--border-subtle'] as $tier) {
+                $luminance = self::luminance($tokens[$tier]);
+
+                if ($previous !== null) {
+                    self::assertLessThan(
+                        $previous,
+                        $luminance,
+                        $id . ': border tier ' . $tier . ' is not dimmer than the tier above it.'
+                    );
+                }
+                $previous = $luminance;
+            }
+        }
+    }
+
+    /**
      * WCAG 2.x relative luminance of a `#rrggbb` hex.
      */
     private static function luminance(string $hex): float
@@ -493,5 +560,24 @@ final class SampleThemePluginTest extends TestCase
         }
 
         return $hex;
+    }
+
+    /**
+     * Split a shipped `rgba(r, g, b, a)` literal into its hex ink and alpha.
+     *
+     * @return array{0: string, 1: float}
+     */
+    private static function splitRgba(string $value): array
+    {
+        if (preg_match('/^rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\s*\)$/', $value, $m) !== 1) {
+            self::fail("Cannot parse ring token: {$value}");
+        }
+
+        $ink = '#';
+        foreach ([1, 2, 3] as $i) {
+            $ink .= str_pad(dechex((int) $m[$i]), 2, '0', STR_PAD_LEFT);
+        }
+
+        return [$ink, (float) $m[4]];
     }
 }

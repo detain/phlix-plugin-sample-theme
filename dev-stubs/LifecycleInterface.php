@@ -32,7 +32,9 @@ interface LifecycleInterface
     public function onDisable(): void;
 
     /**
-     * @return array<class-string, string|callable>
+     * @return array<class-string, string|callable> Keys are event FQCNs;
+     *   values are listener method names or callables (host contract:
+     *   phlix-shared src/Plugin/LifecycleInterface.php).
      */
     public function subscribedEvents(): array;
 }

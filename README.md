@@ -89,7 +89,10 @@ to it — it is used by the integration tests.
 There is no manifest `theme` key and no `onEnable()` wiring. The entry class
 implements `Phlix\Theming\ThemeSourceInterface`, and `PluginLoader::enable()`
 registers it off the `instanceof` — the same one-arm capability pattern the
-metadata- and subtitle-source plugins use:
+metadata- and subtitle-source plugins use. **Excerpt, not a template:** the
+three `LifecycleInterface` methods are elided here (the theme has nothing to
+do in any of them) — paste the complete class from `src/SampleThemePlugin.php`,
+never this sketch:
 
 ```php
 final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterface
@@ -216,7 +219,10 @@ item 7 makes that variant dangerous, not cosmetic.
    `sample-dusk-high-contrast`, `Sample Dusk`, `Sample Dusk (High Contrast)`.
    "Sample" is placeholder copy: shipping it means users pick "Sample Dusk"
    from your server's appearance picker. Ids collide *loudly* (see below); the
-   display name is pure branding, so change both.
+   display name is pure branding, so change both. (The admin plugin list's
+   title — "Sample Theme" in the walkthrough above — lives in neither: it is
+   minted when the catalog curates your repo into phlix-plugins'
+   `plugins.json`, so expect to change it there, at curation, not here.)
 9. **The S440 guard token** — `S440SAMPTHEMEGATEX6B2` in
    `tests/SecurityAuditCheckTest.php` (constant, equality assertion, and the
    "Lane token:" header line). Every theme repo in the estate was minted a

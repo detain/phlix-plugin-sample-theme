@@ -114,7 +114,10 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
     /**
      * A theme plugin subscribes to no events.
      *
-     * @return array<class-string, string> Always empty.
+     * @return array<class-string, string|callable> Map keyed by event FQCN to
+     *   a listener (method name or callable) — the host contract's shape, kept
+     *   byte-faithful so a fork that DOES subscribe copies a true signature.
+     *   Always empty for a theme plugin.
      */
     public function subscribedEvents(): array
     {
@@ -156,7 +159,18 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     '--accent-hover' => '#8fbcff',
                     '--accent-active' => '#4d8ce0',
                     '--accent-soft' => 'rgba(110, 168, 254, 0.14)',
-                    '--accent-ring' => 'rgba(110, 168, 254, 0.55)',
+                    // Focus ring: an alpha OVER this theme's accent, composited
+                    // by the host onto whatever ground the control sits on. The
+                    // law is the 3:1 non-text floor on EVERY ground — so the
+                    // alpha is re-derived for the accent's own luminance, not
+                    // copied from another theme. 0.55 (nocturne's amber-derived
+                    // value) measures 3.14/3.15/3.09/2.93 over bg/surface/
+                    // surface-2/surface-3 here: this blue is dimmer than that
+                    // amber, so the transplanted alpha fails on surface-3.
+                    // 0.65 measures 3.98/3.94/3.79/3.53 — every ground clears
+                    // 3:1 with headroom. Pinned by
+                    // testTheFocusRingClearsThreeToOneOnEveryGround().
+                    '--accent-ring' => 'rgba(110, 168, 254, 0.65)',
                     '--accent-text' => '#8fbcff',
 
                     // Background + elevation stack.
@@ -185,7 +199,19 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     // built-ins' ink-on-amber.
                     '--text-on-accent' => '#05060a',
 
-                    // Borders.
+                    // Borders. Stated trade-off, not a to-do: at dusk's ink
+                    // level the boundary is a 1.35:1 hairline on --bg (1.27 on
+                    // --surface) — under WCAG 1.4.11's 3:1 for meaningful
+                    // non-text boundaries. The compensations are deliberate:
+                    // focus jumps the boundary to --accent-ring, and the
+                    // high-contrast variant below measures 3.33:1 — the pair
+                    // teaches that the default is a mood choice, and 3:1 is
+                    // the fork's option, not an oversight. A fork lifting this
+                    // value must keep the ramp STRICT: --border-subtle <
+                    // --border < --border-strong (pinning test
+                    // testTheBorderTiersFormAStrictLuminanceRamp) — an
+                    // in-between value brighter than --border-strong inverts
+                    // the hierarchy, which is why no single token here moves.
                     '--border' => '#1e2735',
                     '--border-subtle' => '#141b26',
                     '--border-strong' => '#2c3849',

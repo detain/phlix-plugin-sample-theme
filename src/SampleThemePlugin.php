@@ -187,10 +187,21 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     '--surface-glass' => 'rgba(11, 15, 24, 0.62)',
                     '--surface-glass-strong' => 'rgba(5, 6, 10, 0.82)',
 
-                    // Text ramp.
+                    // Text ramp. `--text-subtle` is body ink where it is
+                    // consumed — card captions and menu meta sit on the
+                    // elevated panels — so it carries the ring's law one
+                    // rung up: derive against EVERY ground, do not copy.
+                    // The majors-era #75839a measured 5.28/4.99/4.54/4.01
+                    // over bg/surface/surface-2/surface-3 — below the
+                    // 4.5:1 floor where the roles actually live; the
+                    // suggested one-notched #7d8ba4 still lands 4.47 on
+                    // surface-3 (measure the destination, not the
+                    // direction), so this ships #7f8da7 at
+                    // 6.05/5.72/5.21/4.60. Pinned by
+                    // testTheSubtleInkClearsWcagAaOnEveryGround().
                     '--text' => '#e6ecf5',
                     '--text-muted' => '#a3b0c2',
-                    '--text-subtle' => '#75839a',
+                    '--text-subtle' => '#7f8da7',
                     // Faintest tier — NOT decoration: phlix-ui AuthField.vue
                     // renders ::placeholder in this token, so it must clear
                     // AA body contrast (4.5:1) on the composited input

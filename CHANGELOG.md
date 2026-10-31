@@ -11,6 +11,20 @@ just in the git log.
 
 ## [Unreleased]
 
+### Fixed — review-campaign minors, theme vein batch W-min154 (2026-10-30)
+- `--text-subtle` raised `#75839a` → `#7f8da7`: the shipped value measured
+  4.54:1 on `--surface-2` and 4.01:1 on `--surface-3` — body-text ink below
+  the 4.5:1 AA floor on the grounds its real roles (card captions, menu
+  meta) live on. The review's suggested `#7d8ba4` measures 4.47:1 on
+  surface-3, still under, so the destination was re-derived: `#7f8da7`
+  measures 6.05/5.72/5.21/4.60 across the four grounds and keeps the text
+  luminance ramp strict. Pinned by
+  `testTheSubtleInkClearsWcagAaOnEveryGround` (measured red at the old value
+  before the fix shipped); the faint-tier window comment the move
+  invalidated was re-derived in the same pass. WIRE BODY change: joins the
+  open phlix-server re-vendor + `GOLDEN_MD5` rider from W-min151 — one
+  re-vendor serves both. *(M-THEME-SAMPLE-11)*
+
 ### Changed — review-campaign minors, theme vein batch W-min153 (2026-10-30)
 - The dead-alias census is restated to the host's refined record everywhere it
   appears (class docblock, `DEAD_ALIASES` guard docblock, README): twelve of

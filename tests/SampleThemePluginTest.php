@@ -396,13 +396,15 @@ final class SampleThemePluginTest extends TestCase
         // grounds (--bg, --surface). --surface-2 is NOT asserted raw on
         // purpose: clearing 4.5:1 there needs luminance ≥
         // 4.5*(L(#131a26)+0.05)-0.05 = 4.5*(0.010172+0.05)-0.05 = 0.220773,
-        // which sits just BELOW --text-subtle (0.223476) — a faint could
-        // clear the elevated ground raw only inside the hairline window
-        // [0.2208, 0.2235), within 0.003 luminance of subtle: effectively
-        // collapsing the tier distinction. On --surface-2 the hosted faint
-        // roles are inputs, which always arrive composited (the law below);
-        // a raw-faint caption on the elevated panel is a design change that
-        // must re-derive this arithmetic, not a default the sample can pin.
+        // and the shipped faint deliberately stays under it: on --surface-2
+        // the hosted faint roles are inputs, which always arrive composited
+        // (the law below), and a raw-faint caption on the elevated panel is
+        // a design change that must re-derive this arithmetic, not a default
+        // the sample can pin. (Until W-min154 the argument leaned on the
+        // 0.003-luminance hairline window between this threshold and
+        // --text-subtle's old 0.223476; lifting subtle to 0.263518 retired
+        // that crutch — the load-bearing fact is the shipped faint's own
+        // 0.201203, and the policy survives the move.)
         $grounds = ['--bg', '--surface'];
 
         foreach (['sample-dusk' => $dusk, 'sample-dusk-high-contrast' => $highContrast] as $id => $tokens) {
@@ -430,6 +432,57 @@ final class SampleThemePluginTest extends TestCase
                         )
                     );
                 }
+            }
+        }
+    }
+
+    /**
+     * WCAG AA floor for the subtle tier, measured FROM THE PAYLOAD HEXES —
+     * the same law the faint tier and the focus ring carry, one rung up.
+     *
+     * `--text-subtle` is real body ink where the shipped SPA consumes it:
+     * card captions and menu meta render on the elevated panels, so it must
+     * clear 4.5:1 on EVERY opaque ground — not just the page bg it happens
+     * to be comfortable on. The majors-era `#75839a` measured
+     * 5.28/4.99/4.54/4.01 over bg/surface/surface-2/surface-3: a <0.05
+     * margin on surface-2 and below the floor on the strictest ground —
+     * the silent break a fork inherits the moment it lightens a surface.
+     * The review's suggested destination `#7d8ba4` measures 4.47 on
+     * surface-3, still under, so the shipped `#7f8da7` was re-derived to
+     * clear all four: 6.05/5.72/5.21/4.60. Both variants are pinned (the
+     * high-contrast variant raises its own subtle and inherits dusk's
+     * grounds, merged below).
+     */
+    public function testTheSubtleInkClearsWcagAaOnEveryGround(): void
+    {
+        $dusk = $this->tokensOf('sample-dusk');
+        $merged = $dusk;
+        foreach ($this->tokensOf('sample-dusk-high-contrast') as $key => $value) {
+            $merged[$key] = $value;
+        }
+
+        foreach (['sample-dusk' => $dusk, 'sample-dusk-high-contrast' => $merged] as $id => $tokens) {
+            self::assertArrayHasKey(
+                '--text-subtle',
+                $tokens,
+                'Both variants carry a subtle tier; the law cannot skip one.'
+            );
+
+            foreach (['--bg', '--surface', '--surface-2', '--surface-3'] as $groundKey) {
+                $ratio = self::contrast($tokens['--text-subtle'], $tokens[$groundKey]);
+
+                self::assertGreaterThanOrEqual(
+                    4.5,
+                    $ratio,
+                    sprintf(
+                        '%s: --text-subtle %s on %s %s is %.2f:1 — below the 4.5:1 body-text floor.',
+                        $id,
+                        $tokens['--text-subtle'],
+                        $groundKey,
+                        $tokens[$groundKey],
+                        $ratio
+                    )
+                );
             }
         }
     }

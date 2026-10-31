@@ -7,13 +7,28 @@ rename touches.
 
 ```
 phlix-plugin-sample-theme/
-├── composer.json              # PSR-4 autoload for the entry class
-├── plugin.json                # manifest: type "ui-theme", entry FQCN
-├── src/SampleThemePlugin.php  # LifecycleInterface + ThemeSourceInterface
-├── dev-stubs/                 # host-only contracts, for THIS repo's CI only
-├── tests/                     # the plugin's own suite
-└── phpunit.xml · phpstan.neon · phpcs.xml
+├── composer.json               # PSR-4 autoload for the entry class
+├── composer.lock               # COMMITTED — the S440 gate audits the whole lock
+├── plugin.json                 # manifest: type "ui-theme", entry FQCN
+├── CHANGELOG.md                # release history; version markers carry git coords
+├── LICENSE                     # MIT — the copyright line is a fork-rename target
+├── .github/workflows/test.yml  # CI; the composer-audit leg is the LAST job (guard-pinned)
+├── scripts/
+│   └── security-audit-check.php  # the S440 gate — whole-lock audit, capable of failing
+├── src/SampleThemePlugin.php   # LifecycleInterface + ThemeSourceInterface
+├── dev-stubs/                  # host-only contracts, for THIS repo's CI only
+├── tests/
+│   ├── bootstrap.php
+│   ├── SampleThemePluginTest.php   # payload laws: counts, grammar, contrast, aliases
+│   └── SecurityAuditCheckTest.php  # guard: pins the gate script + workflow against neutering
+├── phpunit.xml
+├── phpstan.neon
+└── phpcs.xml                   # tool configs (scripts/ exclusions are documented in both)
 ```
+
+Four of those artifacts exist because the estate requires a theme to ship its
+own gate: `scripts/security-audit-check.php`, its guard test, the committed
+lock, and the audit-last workflow are what a fork must KEEP, not just rename.
 
 ## Installing it
 

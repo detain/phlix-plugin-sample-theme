@@ -3,6 +3,13 @@ parameters:
     paths:
         - src
         - tests
+    # scripts/ is deliberately outside the analysed paths (the sibling law is
+    # the exclusion comment in phpcs.xml): the gate script is top-level code
+    # built from global functions, which analyses poorly at level 9, and this
+    # repo's copy is the S440 family identity anchor, held zero-diff and
+    # propagated to the ten sibling theme repos modulo their per-repo renames. Its behaviour is not
+    # unverified either way — tests/SecurityAuditCheckTest.php drives the
+    # script's verdict branches as subprocesses. (review theme-sample__srphp m1)
     # `Phlix\Theming\ThemeSourceInterface` is declared by the HOST server, not by
     # any Composer dependency, so PHPStan cannot find it in `vendor/`. It must be
     # INTRODUCED (scanDirectories), not overridden (stubFiles) — `stubFiles` only

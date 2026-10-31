@@ -4,6 +4,17 @@
     <file>src</file>
     <file>tests</file>
     <file>dev-stubs</file>
+    <!-- scripts/ is deliberately outside this ruleset: the family gate script
+         carries a 121-character line (line 734, over the PSR-12 120 soft
+         limit), so adding it here would redden CI, and this repo's copy of
+         scripts/security-audit-check.php is the S440 family identity anchor,
+         propagated to the ten sibling theme repos modulo their per-repo
+         renames, and held zero-diff here.
+         Wrapping that line is an anchor move for all eleven repos at once;
+         when it lands, add scripts to the file set above. The script is not
+         unverified in the meantime: tests/SecurityAuditCheckTest.php executes
+         its verdict branches as subprocesses (review theme-sample__srphp m1).
+    -->
     <exclude-pattern>vendor/</exclude-pattern>
     <rule ref="PSR12"/>
 </ruleset>

@@ -13,6 +13,19 @@ header carried until 2026-11-07 and what it missed.
 
 ## [Unreleased]
 
+### Fixed — README rename-checklist coordinate + repo-tree completeness (2026-11-06)
+- The rename walkthrough cited `SOURCE_NAME` at `src/SampleThemePlugin.php:96`;
+  the constant is declared at `:102` on the current tree — W-min151/154-era
+  docblock growth pushed it off the cited line, so `:96` is now the summary
+  line of the docblock above it. Re-anchored to `:102`: the walkthrough is
+  precisely where a forker copies coordinates from. The neighbouring host
+  cites (`ThemeSourceRegistry.php:41`, `:121`) were re-verified exact on the
+  server's current tree and left untouched. *(review theme-sample__combined m04)*
+- The repo tree block gained the tracked `.gitignore` line it was missing —
+  the root file the W-min152 batch itself edited (it stopped ignoring the
+  committed lock the S440 story requires), annotated so no forker can read
+  the hygiene excludes as lock-ignoring. *(review theme-sample__combined i05)*
+
 ### Fixed — release-state truth for the v1.0.0 tag (2026-11-07, recording 2026-11-02)
 - The status paragraph above asserted three things the 2026-11-02 estate tag
   wave had displaced: that no git tag existed, that the catalog release entry

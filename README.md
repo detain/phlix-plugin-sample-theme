@@ -12,6 +12,7 @@ phlix-plugin-sample-theme/
 ├── plugin.json                 # manifest: type "ui-theme", entry FQCN
 ├── CHANGELOG.md                # release history; version markers carry git coords
 ├── LICENSE                     # MIT — the copyright line is a fork-rename target
+├── .gitignore                  # hygiene excludes — composer.lock deliberately NOT ignored
 ├── .github/workflows/test.yml  # CI; the composer-audit leg is the LAST job (guard-pinned)
 ├── scripts/
 │   └── security-audit-check.php  # the S440 gate — whole-lock audit, capable of failing
@@ -232,7 +233,7 @@ item 7 makes that variant dangerous, not cosmetic.
 6. **Class name and files** — `SampleThemePlugin` in
    `src/SampleThemePlugin.php` and `tests/SampleThemePluginTest.php` (PSR-4
    requires class↔filename agreement).
-7. **`SOURCE_NAME`** (`src/SampleThemePlugin.php:96`, currently
+7. **`SOURCE_NAME`** (`src/SampleThemePlugin.php:102`, currently
    `'sample-theme'`) — **the rename that fails silently.** Read the note below
    before you skip it.
 8. **Theme ids and display names** — `sample-dusk`,

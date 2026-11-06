@@ -1,15 +1,40 @@
 # Changelog — phlix-plugin-sample-theme
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
-Semantic Versioning. Version markers (`plugin.json`, the `@since` lines in
-`composer.json` prose and the class docblock) all still say **1.0.0**, and that
-is honest: no git tag exists yet, the plugin catalog's release entry pins the
-raw initial-release commit `1ea573b`, and everything since rides the dev
-channel. Minting the first tag (and the catalog re-pin that follows) is an
-owner/closeout decision — this file exists so the history it records is not
-just in the git log.
+Semantic Versioning. Both version markers — `plugin.json`'s `version` and
+`SampleThemePlugin`'s class docblock `@since` (`composer.json` carries no
+version and no prose `@since` marker) — say **1.0.0**, and since 2026-11-02
+that matches the shipped artifact: annotated tag `v1.0.0` exists on origin as
+tag object `4a94748`, peeling to `8fc6557` (the repo tip at tag time), and the
+plugin catalog carries a `1.0.0` release entry for that commit alongside its
+`dev` entry. This file exists so the history it records is not just in the git
+log; the correction entry below documents the pre-tag status paragraph this
+header carried until 2026-11-07 and what it missed.
 
 ## [Unreleased]
+
+### Fixed — release-state truth for the v1.0.0 tag (2026-11-07, recording 2026-11-02)
+- The status paragraph above asserted three things the 2026-11-02 estate tag
+  wave had displaced: that no git tag existed, that the catalog release entry
+  pinned the raw initial-release commit `1ea573b`, and that everything since
+  rode the dev channel. Measured on origin now: annotated tag `v1.0.0` is tag
+  object `4a947485182671a6f80c341d0751ec9fca7b77c3` peeling to
+  `8fc6557939348d527b5c7704c95d9c99574968b5`, cut 2026-11-02 per the owner
+  tag-wave authorization ("FIRST tag on this repo; plugin.json 1.0.0 at tip;
+  S440 guard suite (T-A/T-B/T-C hardened reference family) live"); the catalog
+  (`phlix-plugins/plugins.json`) holds a `1.0.0` release entry and a `dev`
+  entry for this repo, both on ref `8fc6557` with artifact sha256 `766b92b7…`.
+- Consequence for the history below: every batch listed under [Unreleased] —
+  W-min151 through W-min154 and the 2026-10-29/30 majors cluster — is inside
+  the tagged 1.0.0 artifact. The historical [1.0.0] section dated 2026-08-04
+  keeps its verbatim body (its counts re-measure true: 28 base tokens;
+  the variant's override grew 8 to 9); its heading names only the initial
+  commit behind that first release entry, not the tagged one.
+  *(review theme-sample__combined M01)*
+- The header's marker enumeration named "the `@since` lines in
+  `composer.json` prose": `composer.json` carries no `@since` and no version —
+  the repo-wide grep hits only `src/SampleThemePlugin.php:91`. Repaired in the
+  paragraph above. *(review theme-sample__combined m03)*
 
 ### Fixed — review-campaign minors, theme vein batch W-min154 (2026-10-30)
 - `--text-subtle` raised `#75839a` → `#7f8da7`: the shipped value measured
@@ -42,6 +67,28 @@ just in the git log.
   S226 was the catalog ticket (phlix-docs RESUME record); the server prose
   credits S228 with naming the dead aliases, as this file already cited at its
   header. Forks grep these ids. *(M-THEME-SAMPLE-14)*
+
+### Fixed — review-campaign minors, theme vein batch W-min152 (2026-10-30)
+- `.gitignore` stopped ignoring `/composer.lock`. The lock is the artifact the
+  S440 whole-lock audit gate reads, so leaving it git-ignored meant the gate
+  audited a file the repo did not ship; the committed lock now shows its churn
+  instead of hiding it. *(SAMPLE-02)*
+- The `scripts/` exclusion in `phpcs.xml` and `phpstan.neon` is documented as
+  deliberate law, not oversight: this repo's copy of
+  `scripts/security-audit-check.php` is the S440 family identity anchor (the
+  byte-template the ten sibling theme repos were ported from), it carries a
+  121-character line, and wrapping it or dropping the exclusion is an anchor
+  move for all eleven repos at once. The script is not unverified meanwhile —
+  `tests/SecurityAuditCheckTest.php` drives its verdict branches as
+  subprocesses. *(SAMPLE-01)*
+- README repo tree rebuilt true-complete: `scripts/`, the workflow, the
+  committed lock, `LICENSE`, both test files and this CHANGELOG listed with
+  real per-file lines replacing the glyph shorthand. *(SAMPLE-08, -12)*
+- Parked as before, unchanged dispositions: SAMPLE-03 (the `1ea573b` date
+  conflation lives only in the two S440 bright-line files — family-anchor
+  hold) and SAMPLE-06 (the `detain/phlix-shared` `^0.21` pin — an owner-family
+  sweep call, not a sample-only bump). *(recorded for batch completeness; no
+  code change)*
 
 ### Fixed — review-campaign minors, theme vein batch W-min151 (2026-10-30)
 - `--accent-ring` alpha re-derived for this theme's own accent: `0.55` was

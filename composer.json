@@ -7,7 +7,7 @@
     "homepage": "https://github.com/detain/phlix-plugin-sample-theme",
     "require": {
         "php": ">=8.3",
-        "detain/phlix-shared": "^0.21",
+        "detain/phlix-shared": "^0.54.0",
         "psr/container": "^1.1 || ^2.0"
     },
     "require-dev": {

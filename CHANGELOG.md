@@ -13,6 +13,23 @@ header carried until 2026-11-07 and what it missed.
 
 ## [Unreleased]
 
+### Changed — `detain/phlix-shared` re-pin `^0.21` → `^0.54.0` (2026-11-06)
+- The estate-wide shared re-pin wave landed here: the constraint the W-min152
+  batch parked as an owner-family sweep call (SAMPLE-06) is that sweep, so the
+  reference plugin now sits on the same shared line as every other consumer.
+  A targeted `composer update detain/phlix-shared` rotated exactly one lock
+  node — `0.21.0` → `v0.54.0`, source/dist reference `12994652` → `55f3e680`
+  (the tagged v0.54.0 peel); shared's `require`/`require-dev` blocks are
+  byte-identical between the two tags, so the 33 locked packages held with
+  0 installs and 0 removals. Gates are identical parent-to-tip (phpunit
+  49/1569, phpstan, phpcs, whole-lock audit pass): the shared declaration this
+  plugin implements, `Phlix\Shared\Plugin\LifecycleInterface`, is
+  signature-identical across the jump (the two tags differ in one docblock
+  summary line), and `ThemeSourceInterface` is the repo's own `dev-stubs/`
+  seam the pin never touches — which is exactly the pin-hygiene point a
+  reference repo has to keep honest. *(review theme-sample__combined
+  SAMPLE-06; estate re-pin)*
+
 ### Fixed — README rename-checklist coordinate + repo-tree completeness (2026-11-06)
 - The rename walkthrough cited `SOURCE_NAME` at `src/SampleThemePlugin.php:96`;
   the constant is declared at `:102` on the current tree — W-min151/154-era

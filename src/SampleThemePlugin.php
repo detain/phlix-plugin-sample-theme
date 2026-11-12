@@ -191,7 +191,7 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     // consumed — card captions and menu meta sit on the
                     // elevated panels — so it carries the ring's law one
                     // rung up: derive against EVERY ground, do not copy.
-                    // The majors-era #75839a measured 5.28/4.99/4.54/4.01
+                    // The majors-era #75839a measured 5.27/4.99/4.54/4.01
                     // over bg/surface/surface-2/surface-3 — below the
                     // 4.5:1 floor where the roles actually live; the
                     // suggested one-notched #7d8ba4 still lands 4.47 on
@@ -202,10 +202,15 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     '--text' => '#e6ecf5',
                     '--text-muted' => '#a3b0c2',
                     '--text-subtle' => '#7f8da7',
-                    // Faintest tier — NOT decoration: phlix-ui AuthField.vue
-                    // renders ::placeholder in this token, so it must clear
-                    // AA body contrast (4.5:1) on the composited input
-                    // background; a law test computes it from these hexes.
+                    // Faintest tier — NOT decoration. Shipped phlix-ui
+                    // (v0.99.27) paints placeholders in it — SyncPlayModal's
+                    // input composited over the modal's --surface-2 panel,
+                    // CommandPalette's transparent input straight on its
+                    // --surface-2 panel — plus the Login/Signup divider and
+                    // hint and the admin Logs update note on the page
+                    // grounds. A law test computes 4.5:1 from these hexes on
+                    // every ground it asserts; raw --surface-2 (4.17:1 here)
+                    // is the one stated exclusion — the test derives why.
                     '--text-faint' => '#6e7d94',
                     // The INVERSE of `--accent-text`, and a different token:
                     // this is the ink placed ON accent fills (button labels,
@@ -266,9 +271,11 @@ final class SampleThemePlugin implements LifecycleInterface, ThemeSourceInterfac
                     '--text-muted' => '#d7deea',
                     '--text-subtle' => '#b3bfd1',
                     // The faintest tier comes along too: a raised-contrast
-                    // form that still renders its placeholder at dusk's ink
-                    // is a failed high-contrast variant. Kept below
-                    // --text-subtle's luminance so the ramp survives.
+                    // variant that still painted its placeholders and form
+                    // hints at dusk's ink would be a failed high-contrast
+                    // variant. Kept below --text-subtle's luminance so the
+                    // ramp survives; it clears 4.5:1 even on raw --surface-2
+                    // (6.67:1), the ground dusk's own faint stops short of.
                     '--text-faint' => '#93a1b8',
                     '--border' => '#55637a',
                     '--border-strong' => '#7d8ba3',

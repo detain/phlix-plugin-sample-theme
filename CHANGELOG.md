@@ -13,6 +13,25 @@ header carried until 2026-11-07 and what it missed.
 
 ## [Unreleased]
 
+### Fixed — faint-law premise re-anchor, LICENSE attribution, 5.27 drift (2026-11-12)
+- The `--text-faint` docblocks (dusk + high-contrast inline comments, and the
+  faint law test's docblock and exclusion comment) cited phlix-ui
+  `AuthField.vue` as the placeholder consumer; at ui v0.99.27 AuthField paints
+  its placeholder in `--text-subtle`. Re-anchored to the live consumer set —
+  SyncPlayModal (composited input over the modal's `--surface-2` panel),
+  CommandPalette (transparent input on `--surface-2`), Login/Signup divider +
+  hint and the Logs update note (page grounds), IndexRail (disabled). The raw
+  `--surface-2` exclusion is re-derived without the old "inputs there arrive
+  composited" premise, which CommandPalette falsifies: it now stands on the
+  shipped value's own arithmetic (0.201203 < 0.220773, 4.17:1) as a stated,
+  unpinned gap. No token value moves; every asserted ground still passes.
+- `LICENSE` line 3 named "Phlix contributors" while every `@copyright` file
+  header names Joe Huss; aligned to the file headers, and the README fork
+  checklist now names both as one rename target.
+- The majors-era `#75839a` subtle measurement was cited as 5.28 on `--bg` in
+  the source comment and the subtle law docblock; it measures 5.27.
+  *(review theme-sample SMP-1, SMP-2, SMP-3)*
+
 ### Changed — `detain/phlix-shared` re-pin `^0.21` → `^0.54.0` (2026-11-06)
 - The estate-wide shared re-pin wave landed here: the constraint the W-min152
   batch parked as an owner-family sweep call (SAMPLE-06) is that sweep, so the

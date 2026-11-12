@@ -367,13 +367,25 @@ final class SampleThemePluginTest extends TestCase
      * WCAG AA floor for the faintest ink, measured FROM THE PAYLOAD HEXES —
      * no host CSS needed, so this test travels with the payload.
      *
-     * `--text-faint` is not decorative in the shipped SPA: phlix-ui's
-     * `AuthField.vue` renders `::placeholder` in `--text-faint` on an input
-     * background of `color-mix(in srgb, var(--surface) 80%, transparent)`
-     * laid over whatever page background the form sits on (`--bg`,
-     * `--surface`, or a `--surface-2` panel). The value this sample shipped
-     * from its first commit — `#465061` — measures 2.39:1 there:
-     * decoration-grade ink on an interactive control.
+     * `--text-faint` is not decorative in the shipped SPA. Its live
+     * consumers, re-read at phlix-ui v0.99.27:
+     *
+     *  - `SyncPlayModal.vue` `::placeholder` — an input whose background is
+     *    `color-mix(in srgb, var(--surface) 80%, transparent)` laid over the
+     *    modal's `--surface-2` panel: the COMPOSITED-INPUT role;
+     *  - `CommandPalette.vue` `::placeholder` — a TRANSPARENT input on the
+     *    palette's `--surface-2` panel: raw faint on `--surface-2`;
+     *  - `LoginForm.vue` / `SignupForm.vue` divider and hint, and the admin
+     *    `LogsPage.vue` update note — raw faint on the page grounds;
+     *  - `IndexRail.vue` empty letters — a disabled control.
+     *
+     * (`AuthField.vue`, the consumer this law was first written for, now
+     * paints its placeholder in `--text-subtle`; the composited-input rule
+     * it introduced lives on in SyncPlayModal, and is pinned over all three
+     * page grounds because a fork can drop that input anywhere.) The value
+     * this sample shipped from its first commit — `#465061` — measured
+     * 2.39:1 on the composited input: decoration-grade ink on an
+     * interactive control.
      *
      * The high-contrast variant must carry its OWN faintest tier: it inherits
      * dusk's backgrounds but raises its ink, and a variant that forgot the
@@ -392,19 +404,27 @@ final class SampleThemePluginTest extends TestCase
             'The high-contrast variant must override the faintest tier, not inherit it.'
         );
 
-        // Raw ink is the caption/hint role — it sits on the page's opaque
-        // grounds (--bg, --surface). --surface-2 is NOT asserted raw on
-        // purpose: clearing 4.5:1 there needs luminance ≥
-        // 4.5*(L(#131a26)+0.05)-0.05 = 4.5*(0.010172+0.05)-0.05 = 0.220773,
-        // and the shipped faint deliberately stays under it: on --surface-2
-        // the hosted faint roles are inputs, which always arrive composited
-        // (the law below), and a raw-faint caption on the elevated panel is
-        // a design change that must re-derive this arithmetic, not a default
-        // the sample can pin. (Until W-min154 the argument leaned on the
-        // 0.003-luminance hairline window between this threshold and
-        // --text-subtle's old 0.223476; lifting subtle to 0.263518 retired
-        // that crutch — the load-bearing fact is the shipped faint's own
-        // 0.201203, and the policy survives the move.)
+        // Raw ink is the caption/hint role — the Login/Signup hints and the
+        // Logs note sit on the page's opaque grounds (--bg, --surface), so
+        // both are asserted raw. --surface-2 is NOT asserted raw, and the
+        // reason can no longer be "faint inputs there arrive composited":
+        // CommandPalette's transparent input paints raw faint on its
+        // --surface-2 panel. The exclusion stands on the shipped value's own
+        // arithmetic instead. Clearing 4.5:1 on --surface-2 needs luminance
+        // ≥ 4.5*(L(#131a26)+0.05)-0.05 = 4.5*(0.010172+0.05)-0.05 = 0.220773;
+        // the shipped faint is 0.201203, which measures 4.17:1 there. That
+        // gap is STATED, not pinned: phlix-ui's own static contrast lock
+        // classes --text-faint as placeholder/disabled ink and leaves it
+        // untested, and closing it is a token-value move this sample does not
+        // make. A fork that wants the palette placeholder at AA re-derives
+        // inside the window 0.220773 ≤ L < 0.263518 (--text-subtle, so the
+        // strict tier ramp survives) and then adds --surface-2 here. The
+        // high-contrast faint already clears raw --surface-2 at 6.67:1. The
+        // tightest case this test DOES assert is dusk's composited input
+        // over --surface-2 (SyncPlayModal) at 4.51:1. (Until W-min154 the
+        // argument leaned on the 0.003-luminance hairline window between
+        // the threshold and --text-subtle's old 0.223476; lifting subtle to
+        // 0.263518 retired that crutch.)
         $grounds = ['--bg', '--surface'];
 
         foreach (['sample-dusk' => $dusk, 'sample-dusk-high-contrast' => $highContrast] as $id => $tokens) {
@@ -444,7 +464,7 @@ final class SampleThemePluginTest extends TestCase
      * card captions and menu meta render on the elevated panels, so it must
      * clear 4.5:1 on EVERY opaque ground — not just the page bg it happens
      * to be comfortable on. The majors-era `#75839a` measured
-     * 5.28/4.99/4.54/4.01 over bg/surface/surface-2/surface-3: a <0.05
+     * 5.27/4.99/4.54/4.01 over bg/surface/surface-2/surface-3: a <0.05
      * margin on surface-2 and below the floor on the strictest ground —
      * the silent break a fork inherits the moment it lightens a surface.
      * The review's suggested destination `#7d8ba4` measures 4.47 on

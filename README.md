@@ -250,8 +250,10 @@ item 7 makes that variant dangerous, not cosmetic.
    unique token when the guard was propagated; a fork mints its own too — it
    identifies *your* lane in CI logs.
 10. **Housekeeping** — regenerate `composer.lock` (`composer update`, never
-    hand-edit), the `LICENSE` copyright line, this README's title and URLs,
-    and anything in `.github/workflows/` that names the repo.
+    hand-edit), the `LICENSE` copyright line together with the `@copyright`
+    file headers it mirrors (both name the same holder — keep them in step),
+    this README's title and URLs, and anything in `.github/workflows/` that
+    names the repo.
 
 **Why item 7 is the dangerous one.** `ThemeSourceRegistry` keys provenance by
 source name, and re-registering a name **replaces** the previous contribution

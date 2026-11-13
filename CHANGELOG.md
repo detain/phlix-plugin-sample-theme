@@ -14,6 +14,7 @@ header carried until 2026-11-07 and what it missed.
 ## [Unreleased]
 
 ### Changed
+- CI: actions/checkout bumped v6 to v7 (both jobs) and PHP 8.5 added to the phpunit matrix (8.3 floor unchanged). Composer dependencies re-verified at latest compatible (phpunit 12.5, phpstan 2.3.5, phpcs 4.x; `composer update --dry-run` is a no-op); detain/phlix-shared stays on its ^0.54.0 pin. setup-php and codacy action SHAs already at latest releases.
 - Dependencies: require-dev upgraded to phpunit/phpunit ^12.5 (12.5.44, was 10.5; phpunit.xml already conforms to the 12 schema) and phpstan/phpstan ^2.3.5; lock refreshed. detain/phlix-shared pin untouched. GitHub Actions already on latest majors. The guard-test message assertions the previous change left stale are now mirrored.
 - Audit gate (MAL-17): `scripts/security-audit-check.php` messages no longer print the slash-stem plurals "advisory/ies" / "repository/ies"; they pluralise correctly (1 advisory, 2 advisories). Estate family wave; test mirrors updated in lockstep.
 

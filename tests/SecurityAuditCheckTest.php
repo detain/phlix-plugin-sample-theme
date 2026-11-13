@@ -492,7 +492,7 @@ final class SecurityAuditCheckTest extends TestCase
 
         self::assertSame(1, $result['exit'], $result['output']);
         self::assertStringContainsString(
-            '::error::Security audit FAILED — 1 advisory/ies affecting 1 package(s) (0 require, 1 require-dev).',
+            '::error::Security audit FAILED — 1 advisory affecting 1 package(s) (0 require, 1 require-dev).',
             $result['output'],
         );
         self::assertStringContainsString(
@@ -635,7 +635,7 @@ final class SecurityAuditCheckTest extends TestCase
 
         self::assertSame(0, $result['exit'], $result['output']);
         self::assertStringContainsString(
-            '::notice::1 security advisory/ies affecting 1 package(s) are IGNORED',
+            '::notice::1 security advisory affecting 1 package(s) is IGNORED',
             $result['output'],
         );
         self::assertStringContainsString('vendor/unfixable [require] locked at 3.1.0', $result['output']);
@@ -654,7 +654,7 @@ final class SecurityAuditCheckTest extends TestCase
 
         self::assertSame(1, $result['exit'], $result['output']);
         self::assertStringContainsString(
-            '::error::1 advisory repository/ies were unreachable — the audit measured nothing.',
+            '::error::1 advisory repository was unreachable — the audit measured nothing.',
             $result['output'],
         );
     }

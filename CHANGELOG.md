@@ -13,6 +13,9 @@ header carried until 2026-11-07 and what it missed.
 
 ## [Unreleased]
 
+### Changed
+- Audit gate (MAL-17): `scripts/security-audit-check.php` messages no longer print the slash-stem plurals "advisory/ies" / "repository/ies"; they pluralise correctly (1 advisory, 2 advisories). Estate family wave; test mirrors updated in lockstep.
+
 ### Fixed — faint-law premise re-anchor, LICENSE attribution, 5.27 drift (2026-11-12)
 - The `--text-faint` docblocks (dusk + high-contrast inline comments, and the
   faint law test's docblock and exclusion comment) cited phlix-ui
